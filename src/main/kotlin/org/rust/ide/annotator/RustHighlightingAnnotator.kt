@@ -4,6 +4,7 @@ import com.intellij.lang.annotation.AnnotationHolder
 import com.intellij.lang.annotation.Annotator
 import com.intellij.openapi.editor.colors.TextAttributesKey
 import com.intellij.psi.PsiElement
+import org.jetbrains.annotations.NotNull
 import org.rust.ide.colors.RustColor
 import org.rust.ide.highlight.syntax.RustHighlighter
 import org.rust.lang.core.psi.*
@@ -31,6 +32,7 @@ class RustHighlightingAnnotator : Annotator {
 
         override fun visitTypeParam(o: RustTypeParamElement) {
             holder.highlight(o, RustColor.TYPE_PARAMETER)
+            // @TODO Highlight bounds differently.
         }
 
         override fun visitPatBinding(o: RustPatBindingElement) {
@@ -46,6 +48,12 @@ class RustHighlightingAnnotator : Annotator {
                 }
             }
         }
+
+        // @TODO Bind types and paths similarly
+        //       grammar was tough to read, doesn't look like it can differentiate between bottom types.
+        override fun visitEnumItem(o: RustEnumItemElement)   {   holder.highlight(o.identifier, RustColor.ENUM) }
+        override fun visitStructItem(o: RustStructItemElement) { holder.highlight(o.identifier, RustColor.STRUCT) }
+        override fun visitTraitItem(o: RustTraitItemElement) {   holder.highlight(o.identifier, RustColor.TRAIT) }
 
         override fun visitFnItem(o: RustFnItemElement) {
             holder.highlight(o.identifier, RustColor.FUNCTION_DECLARATION)
