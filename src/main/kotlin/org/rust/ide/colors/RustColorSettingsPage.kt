@@ -27,6 +27,7 @@ class RustColorSettingsPage : ColorSettingsPage {
     ).mapValues { it.value.textAttributesKey }
 
     private val DEMO_TEXT by lazy {
+        // @TODO The annotations in this file should be generable, and would be more accurate for it.
         loadCodeSampleResource("org/rust/ide/colors/highlighterDemoText.rs")
     }
 
