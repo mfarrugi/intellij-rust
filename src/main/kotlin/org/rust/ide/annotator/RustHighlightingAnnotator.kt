@@ -32,7 +32,16 @@ class RustHighlightingAnnotator : Annotator {
 
         override fun visitTypeParam(o: RustTypeParamElement) {
             holder.highlight(o, RustColor.TYPE_PARAMETER)
-            // @TODO Highlight bounds differently.
+            o.typeParamBounds?.let {
+                holder.highlight(it.colon, RustColor.KEYWORD) // feels off
+                it.polyboundList.forEach {
+                    it.bound.traitRef?.let {
+                        // Should this visit path instead?
+                        holder.highlight(it.path.identifier, RustColor.TRAIT)
+                        println(it)
+                    }
+                }
+            }
         }
 
         override fun visitPatBinding(o: RustPatBindingElement) {
