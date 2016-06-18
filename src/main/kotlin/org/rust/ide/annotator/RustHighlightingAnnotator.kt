@@ -4,10 +4,8 @@ import com.intellij.lang.annotation.AnnotationHolder
 import com.intellij.lang.annotation.Annotator
 import com.intellij.openapi.editor.colors.TextAttributesKey
 import com.intellij.psi.PsiElement
-import org.jetbrains.annotations.NotNull
 import org.rust.ide.colors.RustColor
 import org.rust.ide.highlight.syntax.RustHighlighter
-import org.rust.ide.utils.recursionGuard
 import org.rust.lang.core.psi.*
 import org.rust.lang.core.psi.impl.mixin.isMut
 import org.rust.lang.core.psi.util.elementType
@@ -39,7 +37,6 @@ class RustHighlightingAnnotator : Annotator {
                     it.bound.traitRef?.let {
                         // Should this visit path instead?
                         holder.highlight(it.path.identifier, RustColor.TRAIT)
-                        println(it)
                     }
                 }
             }
@@ -51,36 +48,41 @@ class RustHighlightingAnnotator : Annotator {
             }
         }
 
-        override fun visitPath(o: RustPathElement) {
-            o.reference.resolve()?.let {
-                // recursionGuard(it) { it.accept(this) } // Not sure how to get this to work on the resolved reference.
-                // @TODO This logic shouldn't be duplicated.
-                when {
-                    it is RustPatBindingElement && it.isMut -> {
-                        holder.highlight(o.identifier, RustColor.MUT_BINDING)
-                    }
-                    it is RustEnumItemElement   -> holder.highlight(o.identifier, RustColor.ENUM)
-                    it is RustStructItemElement -> holder.highlight(o.identifier, RustColor.STRUCT)
-                    it is RustTraitItemElement  -> holder.highlight(o.identifier, RustColor.TRAIT)
-                    //
-                    it is RustFnItemElement -> holder.highlight(o.identifier, RustColor.FUNCTION_DECLARATION)
-                    it is RustImplMethodMemberElement -> {
-                        val color = if (it.isStatic) RustColor.STATIC_METHOD else RustColor.INSTANCE_METHOD
-                        holder.highlight(o.identifier, color)
-                    }
-                    it is RustTraitMethodMemberElement -> {
-                        val color = if (it.isStatic) RustColor.STATIC_METHOD else RustColor.INSTANCE_METHOD
-                        holder.highlight(o.identifier, color)
-                    }
+        override fun visitPath(path: RustPathElement) {
+            val ref = path.reference.resolve()
+
+            // This highlights the *path* dependent on the reference type.
+            // @TODO This logic shouldn't be duplicated.
+            // recursionGuard(ref) { it.accept(this) } // Not sure how to get this to work on the resolved reference.
+            when {
+                ref is RustPatBindingElement && ref.isMut -> {
+                    holder.highlight(path.identifier, RustColor.MUT_BINDING)
                 }
+                ref is RustEnumItemElement   -> holder.highlight(path.identifier, RustColor.ENUM)
+                ref is RustStructItemElement -> holder.highlight(path.identifier, RustColor.STRUCT)
+                ref is RustTraitItemElement  -> holder.highlight(path.identifier, RustColor.TRAIT)
+                //
+                ref is RustFnItemElement -> holder.highlight(path.identifier, RustColor.FUNCTION_DECLARATION)
+                ref is RustImplMethodMemberElement -> {
+                    val color = if (ref.isStatic) RustColor.STATIC_METHOD else RustColor.INSTANCE_METHOD
+                    holder.highlight(path.identifier, color)
+                }
+                ref is RustTraitMethodMemberElement -> {
+                    val color = if (ref.isStatic) RustColor.STATIC_METHOD else RustColor.INSTANCE_METHOD
+                    holder.highlight(path.identifier, color)
+                }
+                ref is RustModDeclItemElement ||
+                ref is RustModItemElement -> holder.highlight(path.identifier, RustColor.MODULE)
             }
         }
 
         // @TODO Bind types and paths similarly
         //       grammar was tough to read, doesn't look like it can differentiate between bottom types.
-        override fun visitEnumItem(o: RustEnumItemElement)   {   holder.highlight(o.identifier, RustColor.ENUM) }
-        override fun visitStructItem(o: RustStructItemElement) { holder.highlight(o.identifier, RustColor.STRUCT) }
-        override fun visitTraitItem(o: RustTraitItemElement) {   holder.highlight(o.identifier, RustColor.TRAIT) }
+        override fun visitEnumItem(o: RustEnumItemElement)       = holder.highlight(o.identifier, RustColor.ENUM)
+        override fun visitStructItem(o: RustStructItemElement)   = holder.highlight(o.identifier, RustColor.STRUCT)
+        override fun visitTraitItem(o: RustTraitItemElement)     = holder.highlight(o.identifier, RustColor.TRAIT)
+        override fun visitModDeclItem(o: RustModDeclItemElement) = holder.highlight(o.identifier, RustColor.MODULE)
+        override fun visitModItem(o: RustModItemElement)         = holder.highlight(o.identifier, RustColor.MODULE)
 
         override fun visitFnItem(o: RustFnItemElement) {
             holder.highlight(o.identifier, RustColor.FUNCTION_DECLARATION)
