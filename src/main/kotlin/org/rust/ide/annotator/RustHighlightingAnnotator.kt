@@ -100,7 +100,7 @@ class RustHighlightingAnnotator : Annotator {
                 }
 
                 override fun highlight(element: PsiElement?, color: RustColor?) {
-                    assert(outColor == null, {"Not a leaf element, ambiguous color."})
+                    assert(outColor == null, { e.toString() + " is not a leaf element, ambiguous color." })
                     outColor = color;
                 }
             }
