@@ -52,6 +52,7 @@ class RustHighlightingAnnotator : Annotator {
             }
         }
 
+        // @TODO ReferenceElement
         override fun visitPath(path: RustPathElement) {
             val ref = path.reference.resolve() ?: return
 
@@ -61,6 +62,10 @@ class RustHighlightingAnnotator : Annotator {
             }
             // This highlights the *path* dependent on the reference type.
             resolveColor(ref)?.let { holder.highlight(path.identifier, it) }
+        }
+
+        override fun visitMethodCallExpr(o: RustMethodCallExprElement) {
+            holder.highlight(o.identifier, RustColor.INSTANCE_METHOD)
         }
 
         // @TODO Bind types and paths similarly
