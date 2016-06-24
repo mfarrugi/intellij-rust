@@ -130,8 +130,17 @@ class RustExpressionTypeInferenceTest : RustTypificationTestBase() {
     fun testTupleOutOfBounds() = testExpr("""
         fn main() {
             let (_, _, x) = (1, 2);
-            x
+            x;
           //^ <unknown>
+        }
+    """)
+
+    //language=RUST
+    fun testTupleAsAWhole() = testExpr("""
+        fn main() {
+            let x: ((), ()) = ((), ());
+            x;
+          //^ ((), ())
         }
     """)
 
