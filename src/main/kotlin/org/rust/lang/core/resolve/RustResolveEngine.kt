@@ -128,7 +128,7 @@ object RustResolveEngine {
     fun resolveMethodCallExpr(call: RustMethodCallExprElement): ResolveResult {
         val receiverType = call.expr.resolvedType
         val name = call.identifier.text
-        val matching = receiverType.nonStaticMethods.filter { it.name == name }
+        val matching = nonStaticMethods(receiverType, call).filter { it.name == name }
         return ResolveResult.buildFrom(matching)
     }
 
@@ -231,6 +231,9 @@ object RustResolveEngine {
                 RustResolveUtil.getResolveScopeFor(parent)
         }
     }
+
+    fun nonStaticMethods(type: RustType, pivot: RustCompositeElement): Collection<RustImplMethodMemberElement> =
+        type.visibleImpls(pivot).methods.filter { !it.isStatic }
 }
 
 
@@ -253,6 +256,21 @@ private fun resolveIn(scopes: Sequence<RustResolveScope>, ref: RustReferenceElem
         ?.let { it.element }
         .asResolveResult()
 
+private val Collection<RustImplItemElement>.methods: Collection<RustImplMethodMemberElement>
+    get() = flatMap { it.implBody?.implMethodMemberList.orEmpty() }
+
+private fun RustType.visibleImpls(pivot: RustCompositeElement?): Collection<RustImplItemElement> {
+    val scope = pivot?.let { RustResolveUtil.getResolveScopeFor(it) }
+    val traitImpls: Collection<RustImplItemElement> = if (scope == null) emptyList()
+    else declarations(scope, Context(pivot = pivot, onlyTraits = true))
+        .map { it.element }
+        .filterIsInstance<RustTraitItemElement>()
+        .mapNotNull { implFor(it) }
+        .toList()
+
+    return inherentImpls + traitImpls
+}
+
 
 private fun declarations(scope: RustResolveScope, context: Context): Sequence<ScopeEntry> = Sequence {
     RustScopeVisitor(context).compute(scope).iterator()
@@ -262,7 +280,8 @@ private fun declarations(scope: RustResolveScope, context: Context): Sequence<Sc
 private data class Context(
     val pivot: RustCompositeElement?,
     val inPrelude: Boolean = false,
-    val visitedStarImports: Set<RustUseItemElement> = emptySet()
+    val visitedStarImports: Set<RustUseItemElement> = emptySet(),
+    val onlyTraits: Boolean = false
 )
 
 
@@ -433,7 +452,10 @@ private class RustScopeVisitor(
     private fun isContextLocalTo(o: RustCompositeElement) = o.contains(context.pivot)
 
     private fun staticMethods(o: RustTypeBearingItemElement): Sequence<ScopeEntry> =
-        o.resolvedType.staticMethods.scopeEntries
+        if (context.onlyTraits)
+            emptySequence()
+        else
+            o.resolvedType.visibleImpls(context.pivot).methods.filter { it.isStatic }.scopeEntries
 
 }
 

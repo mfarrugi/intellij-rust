@@ -1,7 +1,7 @@
 package org.rust.lang.core.types
 
 import org.rust.lang.core.psi.RustImplItemElement
-import org.rust.lang.core.psi.RustImplMethodMemberElement
+import org.rust.lang.core.psi.RustTraitItemElement
 import org.rust.lang.core.types.visitors.RustTypeVisitor
 
 interface RustType {
@@ -23,12 +23,6 @@ interface RustType {
      */
     val inherentImpls: Collection<RustImplItemElement> get() = emptyList()
 
-    val allMethods: Collection<RustImplMethodMemberElement>
-        get() = inherentImpls.flatMap { it.implBody?.implMethodMemberList.orEmpty() }
+    fun implFor(trait: RustTraitItemElement): RustImplItemElement? = null
 
-    val nonStaticMethods: Collection<RustImplMethodMemberElement>
-        get() = allMethods.filter { !it.isStatic }
-
-    val staticMethods: Collection<RustImplMethodMemberElement>
-        get() = allMethods.filter { it.isStatic }
 }

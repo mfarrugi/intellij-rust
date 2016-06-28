@@ -23,7 +23,7 @@ object RustCompletionEngine {
     fun completeFieldOrMethod(field: RustFieldExprElement): Array<out LookupElement> {
         val structType = (field.expr.resolvedType as? RustStructType) ?: return emptyArray()
         // Needs type ascription to please Kotlin's type checker, https://youtrack.jetbrains.com/issue/KT-12696.
-        val fieldsAndMethods: List<RustNamedElement> = (structType.struct.fields + structType.nonStaticMethods)
+        val fieldsAndMethods: List<RustNamedElement> = (structType.struct.fields + RustResolveEngine.nonStaticMethods(structType, field))
         return fieldsAndMethods.toVariantsArray()
     }
 
