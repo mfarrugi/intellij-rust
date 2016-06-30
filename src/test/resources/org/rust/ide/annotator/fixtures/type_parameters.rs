@@ -3,6 +3,6 @@ trait <info>MyTrait</info> {
     fn <info>some_fn</info>(&self);
 }
 
-struct <info>MyStruct</info><<info>N<info>:</info> ?<info>Sized</info>+<info>Debug</info>+<info><info>MyTrait</info></info></info>> {
+struct <info>MyStruct</info><<info>N</info>: ?<info><info>Sized</info></info>+<info><info>Debug</info></info>+<info><info><info>MyTrait</info></info></info>> {
     N: my_field
 }
