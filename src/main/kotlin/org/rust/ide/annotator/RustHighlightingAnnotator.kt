@@ -2,7 +2,6 @@ package org.rust.ide.annotator
 
 import com.intellij.lang.annotation.AnnotationHolder
 import com.intellij.lang.annotation.Annotator
-import com.intellij.openapi.editor.colors.TextAttributesKey
 import com.intellij.psi.PsiElement
 import org.rust.ide.colors.RustColor
 import org.rust.ide.highlight.syntax.RustHighlighter
@@ -32,11 +31,7 @@ class RustHighlightingAnnotator : Annotator {
     // Capture the color of the element w/o mutating anything.
     fun resolveColor(e: PsiElement): RustColor? {
         var outColor: RustColor? = null;
-        val resolver = highlightingVisitor(object : Highlighter {
-            override fun highlight(element: PsiElement?, textAttributesKey: TextAttributesKey?) {
-                outColor = null;
-            }
-
+        val resolver = highlightingVisitor(object : Highlighter { // @TODO Could use RustComputingVisitor
             override fun highlight(element: PsiElement?, color: RustColor?) {
                 assert(outColor == null, { "$e is not a leaf element, ambiguous color." })
                 outColor = color;
@@ -98,17 +93,14 @@ class RustHighlightingAnnotator : Annotator {
 }
 
 interface Highlighter {
-    fun highlight(element: PsiElement?, textAttributesKey: TextAttributesKey?);
-
-    fun highlight(element: PsiElement?, color: RustColor?) {
-        highlight(element, color?.textAttributesKey)
-    }
+    fun highlight(element: PsiElement?, color: RustColor?);
 }
 
 fun wrap(holder: AnnotationHolder): Highlighter {
     return object: Highlighter{
 
-        override fun highlight(element: PsiElement?, textAttributesKey: TextAttributesKey?) {
+        override fun highlight(element: PsiElement?, color: RustColor?) {
+            val textAttributesKey = color?.textAttributesKey
             if (element != null && textAttributesKey != null) {
                 holder.createInfoAnnotation(element, null).textAttributes = textAttributesKey
             }
