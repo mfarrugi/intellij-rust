@@ -14,7 +14,19 @@ import org.rust.lang.core.psi.util.elementType
 class RustHighlightingAnnotator : Annotator {
 
     override fun annotate(element: PsiElement, _holder: AnnotationHolder) {
-        element.accept(highlightingVisitor(wrap(_holder)))
+        val highlighter = wrap(_holder)
+        if (element is RustReferenceElement) {
+            // Highlight the element dependent on what it's referencing.
+            val ref = element.reference.resolve() ?: return
+
+            val text = when (element) {
+                is RustPathElement -> element.identifier
+                else -> element
+            }
+            resolveColor(ref)?.let { highlighter.highlight(text, it) }
+        } else {
+            element.accept(highlightingVisitor(highlighter))
+        }
     }
 
     // Capture the color of the element w/o mutating anything.
@@ -54,17 +66,6 @@ class RustHighlightingAnnotator : Annotator {
             bounds.polyboundList.forEach {
                 visitTraitRef(it.bound.traitRef ?: return)
             }
-        }
-
-        // Highlight the *reference* dependent on the target.
-        override fun visitReference(o: RustReferenceElement) {
-            val ref = o.reference.resolve() ?: return
-
-            val element = when (o) {
-                is RustPathElement -> o.identifier
-                else -> o
-            }
-            resolveColor(ref)?.let { highlight(element, it) }
         }
 
         override fun visitAttr(o: RustAttrElement) = highlight(o, RustColor.ATTRIBUTE)
