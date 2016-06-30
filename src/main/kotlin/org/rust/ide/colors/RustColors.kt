@@ -22,7 +22,7 @@ enum class RustColor(val humanName: String, val externalName: String, fallback: 
     STRUCT                ("Struct", "org.rust.STRUCT", Default.CLASS_NAME),
     TRAIT                 ("Trait",  "org.rust.TRAIT",  Default.INTERFACE_NAME),
     ENUM                  ("Enum",   "org.rust.ENUM",   Default.CLASS_NAME),
-    MODULE                ("Module", "org.rust.MODULE",   Default.IDENTIFIER),
+    MODULE                ("Module", "org.rust.MODULE", Default.IDENTIFIER),
 
     KEYWORD               ("Keyword", "org.rust.KEYWORD", Default.KEYWORD),
 

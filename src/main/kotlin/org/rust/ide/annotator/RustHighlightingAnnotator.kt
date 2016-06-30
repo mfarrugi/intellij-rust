@@ -34,17 +34,15 @@ class RustHighlightingAnnotator : Annotator {
         }
 
         override fun visitTypeParam(o: RustTypeParamElement) {
-            holder.highlight(o, RustColor.TYPE_PARAMETER)
-            o.typeParamBounds?.let {
-                holder.highlight(it.colon, RustColor.KEYWORD) // feels off
-                it.polyboundList.forEach {
-                    it.bound.traitRef?.let {
-                        // Should this visit path instead?
-                        holder.highlight(it.path.identifier, RustColor.TRAIT)
-                    }
-                }
+            holder.highlight(o.identifier, RustColor.TYPE_PARAMETER)
+
+            val bounds = o.typeParamBounds?: return
+            bounds.polyboundList.forEach {
+                visitTraitRef(it.bound.traitRef ?: return)
             }
         }
+
+        override fun visitTraitRef(o: RustTraitRefElement) = holder.highlight(o.path.identifier, RustColor.TRAIT)
 
         override fun visitPatBinding(o: RustPatBindingElement) {
             if (o.isMut) {
@@ -68,8 +66,6 @@ class RustHighlightingAnnotator : Annotator {
             holder.highlight(o.identifier, RustColor.INSTANCE_METHOD)
         }
 
-        // @TODO Bind types and paths similarly
-        //       grammar was tough to read, doesn't look like it can differentiate between bottom types.
         override fun visitEnumItem(o: RustEnumItemElement)       = holder.highlight(o.identifier, RustColor.ENUM)
         override fun visitStructItem(o: RustStructItemElement)   = holder.highlight(o.identifier, RustColor.STRUCT)
         override fun visitTraitItem(o: RustTraitItemElement)     = holder.highlight(o.identifier, RustColor.TRAIT)
@@ -100,7 +96,7 @@ class RustHighlightingAnnotator : Annotator {
                 }
 
                 override fun highlight(element: PsiElement?, color: RustColor?) {
-                    assert(outColor == null, { e.toString() + " is not a leaf element, ambiguous color." })
+                    assert(outColor == null, { "$e is not a leaf element, ambiguous color." })
                     outColor = color;
                 }
             }
