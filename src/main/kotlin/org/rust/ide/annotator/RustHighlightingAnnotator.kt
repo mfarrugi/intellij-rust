@@ -59,12 +59,12 @@ class RustHighlightingAnnotator : Annotator {
         // Highlight the *reference* dependent on the target.
         override fun visitReference(o: RustReferenceElement) {
             val ref = o.reference.resolve() ?: return
-            resolveColor(ref)?.let { highlight(o, it) }
-        }
 
-        override fun visitPath(path: RustPathElement) {
-            val ref = path.reference.resolve() ?: return
-            resolveColor(ref)?.let { highlight(path.identifier, it) }
+            val element = when (o) {
+                is RustPathElement -> o.identifier
+                else -> o
+            }
+            resolveColor(ref)?.let { highlight(element, it) }
         }
 
         override fun visitAttr(o: RustAttrElement) = highlight(o, RustColor.ATTRIBUTE)
