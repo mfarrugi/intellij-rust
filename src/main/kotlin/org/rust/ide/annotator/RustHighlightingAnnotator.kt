@@ -50,15 +50,14 @@ class RustHighlightingAnnotator : Annotator {
             }
         }
 
-        // @TODO ReferenceElement
+        // Highlight the *reference* dependent on the target.
+        override fun visitReference(o: RustReferenceElement) {
+            val ref = o.reference.resolve() ?: return
+            resolveColor(ref)?.let { holder.highlight(o, it) }
+        }
+
         override fun visitPath(path: RustPathElement) {
             val ref = path.reference.resolve() ?: return
-
-            if (ref is RustPathElement) {
-                // Not sure how a path references itself, this causes overflow otherwise.
-                return
-            }
-            // This highlights the *path* dependent on the reference type.
             resolveColor(ref)?.let { holder.highlight(path.identifier, it) }
         }
 
