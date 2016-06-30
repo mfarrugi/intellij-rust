@@ -17,10 +17,6 @@ class RustHighlightingAnnotator : Annotator {
         element.accept(object : RustElementVisitor() {
         var holder = wrap(_holder)
 
-        override fun visitAttr(o: RustAttrElement) {
-            holder.highlight(o, RustColor.ATTRIBUTE)
-        }
-
         override fun visitLitExpr(o: RustLitExprElement) {
             // Re-highlight literals in attributes
             if (o.parent is RustMetaItemElement) {
@@ -29,24 +25,12 @@ class RustHighlightingAnnotator : Annotator {
             }
         }
 
-        override fun visitMacroInvocation(m: RustMacroInvocationElement) {
-            holder.highlight(m, RustColor.MACRO)
-        }
-
         override fun visitTypeParam(o: RustTypeParamElement) {
             holder.highlight(o.identifier, RustColor.TYPE_PARAMETER)
 
             val bounds = o.typeParamBounds?: return
             bounds.polyboundList.forEach {
                 visitTraitRef(it.bound.traitRef ?: return)
-            }
-        }
-
-        override fun visitTraitRef(o: RustTraitRefElement) = holder.highlight(o.path.identifier, RustColor.TRAIT)
-
-        override fun visitPatBinding(o: RustPatBindingElement) {
-            if (o.isMut) {
-                holder.highlight(o.identifier, RustColor.MUT_BINDING)
             }
         }
 
@@ -61,8 +45,14 @@ class RustHighlightingAnnotator : Annotator {
             resolveColor(ref)?.let { holder.highlight(path.identifier, it) }
         }
 
-        override fun visitMethodCallExpr(o: RustMethodCallExprElement) {
-            holder.highlight(o.identifier, RustColor.INSTANCE_METHOD)
+        override fun visitAttr(o: RustAttrElement) = holder.highlight(o, RustColor.ATTRIBUTE)
+
+        override fun visitTraitRef(o: RustTraitRefElement) = holder.highlight(o.path.identifier, RustColor.TRAIT)
+
+        override fun visitPatBinding(o: RustPatBindingElement) {
+            if (o.isMut) {
+                holder.highlight(o.identifier, RustColor.MUT_BINDING)
+            }
         }
 
         override fun visitEnumItem(o: RustEnumItemElement)       = holder.highlight(o.identifier, RustColor.ENUM)
@@ -71,19 +61,15 @@ class RustHighlightingAnnotator : Annotator {
         override fun visitModDeclItem(o: RustModDeclItemElement) = holder.highlight(o.identifier, RustColor.MODULE)
         override fun visitModItem(o: RustModItemElement)         = holder.highlight(o.identifier, RustColor.MODULE)
 
-        override fun visitFnItem(o: RustFnItemElement) {
-            holder.highlight(o.identifier, RustColor.FUNCTION_DECLARATION)
-        }
+        //@TODO When are element and element.identifier different?
+        override fun visitMacroInvocation(m: RustMacroInvocationElement) = holder.highlight(m, RustColor.MACRO)
+        override fun visitMethodCallExpr(o: RustMethodCallExprElement)   = holder.highlight(o.identifier, RustColor.INSTANCE_METHOD)
+        override fun visitFnItem(o: RustFnItemElement)                   = holder.highlight(o.identifier, RustColor.FUNCTION_DECLARATION)
 
-        override fun visitImplMethodMember(o: RustImplMethodMemberElement) {
-            val color = if (o.isStatic) RustColor.STATIC_METHOD else RustColor.INSTANCE_METHOD
-            holder.highlight(o.identifier, color)
-        }
-
-        override fun visitTraitMethodMember(o: RustTraitMethodMemberElement) {
-            val color = if (o.isStatic) RustColor.STATIC_METHOD else RustColor.INSTANCE_METHOD
-            holder.highlight(o.identifier, color)
-        }
+        override fun visitImplMethodMember(o: RustImplMethodMemberElement) =
+            holder.highlight(o.identifier, if (o.isStatic) RustColor.STATIC_METHOD else RustColor.INSTANCE_METHOD)
+        override fun visitTraitMethodMember(o: RustTraitMethodMemberElement) =
+            holder.highlight(o.identifier, if (o.isStatic) RustColor.STATIC_METHOD else RustColor.INSTANCE_METHOD)
 
             // Capture the color of the element w/o mutating anything.
         private fun resolveColor(e: PsiElement): RustColor? {
