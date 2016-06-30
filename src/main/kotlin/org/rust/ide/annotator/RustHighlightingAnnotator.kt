@@ -14,8 +14,30 @@ import org.rust.lang.core.psi.util.elementType
 class RustHighlightingAnnotator : Annotator {
 
     override fun annotate(element: PsiElement, _holder: AnnotationHolder) {
-        element.accept(object : RustElementVisitor() {
-        var holder = wrap(_holder)
+        element.accept(highlightingVisitor(wrap(_holder)))
+    }
+
+    // Capture the color of the element w/o mutating anything.
+    fun resolveColor(e: PsiElement): RustColor? {
+        var outColor: RustColor? = null;
+        val resolver = highlightingVisitor(object : Highlighter {
+            override fun highlight(element: PsiElement?, textAttributesKey: TextAttributesKey?) {
+                outColor = null;
+            }
+
+            override fun highlight(element: PsiElement?, color: RustColor?) {
+                assert(outColor == null, { "$e is not a leaf element, ambiguous color." })
+                outColor = color;
+            }
+        })
+
+        e.accept(resolver)
+        return outColor
+    }
+
+    fun highlightingVisitor(holder: Highlighter) = object : RustElementVisitor() {
+
+        fun highlight(element: PsiElement?, color: RustColor?) = holder.highlight(element, color)
 
         override fun visitLitExpr(o: RustLitExprElement) {
             // Re-highlight literals in attributes
@@ -26,7 +48,7 @@ class RustHighlightingAnnotator : Annotator {
         }
 
         override fun visitTypeParam(o: RustTypeParamElement) {
-            holder.highlight(o.identifier, RustColor.TYPE_PARAMETER)
+            highlight(o.identifier, RustColor.TYPE_PARAMETER)
 
             val bounds = o.typeParamBounds?: return
             bounds.polyboundList.forEach {
@@ -37,60 +59,41 @@ class RustHighlightingAnnotator : Annotator {
         // Highlight the *reference* dependent on the target.
         override fun visitReference(o: RustReferenceElement) {
             val ref = o.reference.resolve() ?: return
-            resolveColor(ref)?.let { holder.highlight(o, it) }
+            resolveColor(ref)?.let { highlight(o, it) }
         }
 
         override fun visitPath(path: RustPathElement) {
             val ref = path.reference.resolve() ?: return
-            resolveColor(ref)?.let { holder.highlight(path.identifier, it) }
+            resolveColor(ref)?.let { highlight(path.identifier, it) }
         }
 
-        override fun visitAttr(o: RustAttrElement) = holder.highlight(o, RustColor.ATTRIBUTE)
+        override fun visitAttr(o: RustAttrElement) = highlight(o, RustColor.ATTRIBUTE)
 
-        override fun visitTraitRef(o: RustTraitRefElement) = holder.highlight(o.path.identifier, RustColor.TRAIT)
+        override fun visitTraitRef(o: RustTraitRefElement) = highlight(o.path.identifier, RustColor.TRAIT)
 
         override fun visitPatBinding(o: RustPatBindingElement) {
             if (o.isMut) {
-                holder.highlight(o.identifier, RustColor.MUT_BINDING)
+                highlight(o.identifier, RustColor.MUT_BINDING)
             }
         }
 
-        override fun visitEnumItem(o: RustEnumItemElement)       = holder.highlight(o.identifier, RustColor.ENUM)
-        override fun visitStructItem(o: RustStructItemElement)   = holder.highlight(o.identifier, RustColor.STRUCT)
-        override fun visitTraitItem(o: RustTraitItemElement)     = holder.highlight(o.identifier, RustColor.TRAIT)
-        override fun visitModDeclItem(o: RustModDeclItemElement) = holder.highlight(o.identifier, RustColor.MODULE)
-        override fun visitModItem(o: RustModItemElement)         = holder.highlight(o.identifier, RustColor.MODULE)
+        override fun visitEnumItem(o: RustEnumItemElement)       = highlight(o.identifier, RustColor.ENUM)
+        override fun visitStructItem(o: RustStructItemElement)   = highlight(o.identifier, RustColor.STRUCT)
+        override fun visitTraitItem(o: RustTraitItemElement)     = highlight(o.identifier, RustColor.TRAIT)
+        override fun visitModDeclItem(o: RustModDeclItemElement) = highlight(o.identifier, RustColor.MODULE)
+        override fun visitModItem(o: RustModItemElement)         = highlight(o.identifier, RustColor.MODULE)
 
         //@TODO When are element and element.identifier different?
-        override fun visitMacroInvocation(m: RustMacroInvocationElement) = holder.highlight(m, RustColor.MACRO)
-        override fun visitMethodCallExpr(o: RustMethodCallExprElement)   = holder.highlight(o.identifier, RustColor.INSTANCE_METHOD)
-        override fun visitFnItem(o: RustFnItemElement)                   = holder.highlight(o.identifier, RustColor.FUNCTION_DECLARATION)
+        override fun visitMacroInvocation(m: RustMacroInvocationElement) = highlight(m, RustColor.MACRO)
+        override fun visitMethodCallExpr(o: RustMethodCallExprElement)   = highlight(o.identifier, RustColor.INSTANCE_METHOD)
+        override fun visitFnItem(o: RustFnItemElement)                   = highlight(o.identifier, RustColor.FUNCTION_DECLARATION)
 
         override fun visitImplMethodMember(o: RustImplMethodMemberElement) =
-            holder.highlight(o.identifier, if (o.isStatic) RustColor.STATIC_METHOD else RustColor.INSTANCE_METHOD)
+            highlight(o.identifier, if (o.isStatic) RustColor.STATIC_METHOD else RustColor.INSTANCE_METHOD)
         override fun visitTraitMethodMember(o: RustTraitMethodMemberElement) =
-            holder.highlight(o.identifier, if (o.isStatic) RustColor.STATIC_METHOD else RustColor.INSTANCE_METHOD)
+            highlight(o.identifier, if (o.isStatic) RustColor.STATIC_METHOD else RustColor.INSTANCE_METHOD)
 
-            // Capture the color of the element w/o mutating anything.
-        private fun resolveColor(e: PsiElement): RustColor? {
-            var outColor: RustColor? = null
-            val prevHolder = holder
-            this.holder = object : Highlighter {
-                override fun highlight(element: PsiElement?, textAttributesKey: TextAttributesKey?) {
-                    outColor = null;
-                }
-
-                override fun highlight(element: PsiElement?, color: RustColor?) {
-                    assert(outColor == null, { "$e is not a leaf element, ambiguous color." })
-                    outColor = color;
-                }
-            }
-            e.accept(this)
-            this.holder = prevHolder
-            return outColor
-        }
-
-    })
+    }
 }
 
 interface Highlighter {
@@ -111,5 +114,4 @@ fun wrap(holder: AnnotationHolder): Highlighter {
         }
 
     }
-}
 }
