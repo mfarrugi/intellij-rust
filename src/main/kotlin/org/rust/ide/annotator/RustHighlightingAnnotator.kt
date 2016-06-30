@@ -56,11 +56,6 @@ class RustHighlightingAnnotator : Annotator {
 
         override fun visitTypeParam(o: RustTypeParamElement) {
             highlight(o.identifier, RustColor.TYPE_PARAMETER)
-
-            val bounds = o.typeParamBounds?: return
-            bounds.polyboundList.forEach {
-                visitTraitRef(it.bound.traitRef ?: return)
-            }
         }
 
         override fun visitAttr(o: RustAttrElement) = highlight(o, RustColor.ATTRIBUTE)
