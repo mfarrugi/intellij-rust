@@ -19,6 +19,8 @@ enum class RustColor(val humanName: String, val default: TextAttributesKey) {
     STRING                ("String",                      Default.STRING),
     NUMBER                ("Number",                      Default.NUMBER),
 
+    PRIMITIVE_TYPE        ("Primitive Type",              Default.KEYWORD),
+
     CRATE                 ("Crate",                       Default.IDENTIFIER),
     STRUCT                ("Struct",                      Default.CLASS_NAME),
     TRAIT                 ("Trait",                       Default.INTERFACE_NAME),

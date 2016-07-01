@@ -3,7 +3,6 @@ package org.rust.ide.annotator
 import com.intellij.lang.annotation.AnnotationHolder
 import com.intellij.lang.annotation.Annotator
 import com.intellij.psi.PsiElement
-import org.jetbrains.annotations.NotNull
 import org.rust.ide.colors.RustColor
 import org.rust.ide.highlight.syntax.RustHighlighter
 import org.rust.lang.core.psi.*
@@ -16,6 +15,10 @@ class RustHighlightingAnnotator : Annotator {
 
     override fun annotate(element: PsiElement, _holder: AnnotationHolder) {
         if (element is RustReferenceElement) {
+            if (element is RustPathElement && element.isPrimitive) {
+                _holder.highlight(element, RustColor.PRIMITIVE_TYPE)
+                return
+            }
             val text = when (element) {
                 is RustPathElement -> element.identifier
                 else -> element

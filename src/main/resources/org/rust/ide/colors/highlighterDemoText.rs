@@ -1,23 +1,23 @@
 <ATTRIBUTE>#[macro_use]</ATTRIBUTE>
-extern crate log;
+extern crate <CRATE>log</CRATE>;
 
 use std::collections::<STRUCT>HashMap</STRUCT>;
 
 mod <MODULE>Stuff</MODULE>;
 
 pub enum <ENUM>Flag</ENUM> {
-    Good,
-    Bad,
-    Ugly
+    <ENUM_VARIANT>Good</ENUM_VARIANT>,
+    <ENUM_VARIANT>Bad</ENUM_VARIANT>,
+    <ENUM_VARIANT>Ugly</ENUM_VARIANT>
 }
 
 pub trait <TRAIT>Write</TRAIT> {
-    fn <INSTANCE_METHOD>write</INSTANCE_METHOD>(&mut self, buf: &[u8]) -> <ENUM>Result</ENUM><usize>;
+    fn <INSTANCE_METHOD>write</INSTANCE_METHOD>(&mut self, buf: &[<PRIMITIVE_TYPE>u8</PRIMITIVE_TYPE>]) -> <ENUM>Result</ENUM><usize>;
 }
 
 struct <STRUCT>Object</STRUCT><<TYPE_PARAMETER>T</TYPE_PARAMETER>> {
-    flag: <ENUM>Flag</ENUM>,
-    fields: <STRUCT>HashMap</STRUCT><<TYPE_PARAMETER>T</TYPE_PARAMETER>, u64>
+    <FIELD>flag</FIELD>: <ENUM>Flag</ENUM>,
+    <FIELD>fields</FIELD>: <STRUCT>HashMap</STRUCT><<TYPE_PARAMETER>T</TYPE_PARAMETER>, <PRIMITIVE_TYPE>u64</PRIMITIVE_TYPE>>
 }
 
 /* Block comment */
