@@ -1,9 +1,9 @@
-#[macro_use]
+<ATTRIBUTE>#[macro_use]</ATTRIBUTE>
 extern crate log;
 
-use std::collections::HashMap;
+use std::collections::<STRUCT>HashMap</STRUCT>;
 
-mod Stuff;
+mod <MODULE>Stuff</MODULE>;
 
 pub enum <ENUM>Flag</ENUM> {
     Good,
@@ -12,42 +12,42 @@ pub enum <ENUM>Flag</ENUM> {
 }
 
 pub trait <TRAIT>Write</TRAIT> {
-    fn write(&mut self, buf: &[u8]) -> Result<usize>;
+    fn <INSTANCE_METHOD>write</INSTANCE_METHOD>(&mut self, buf: &[u8]) -> <ENUM>Result</ENUM><usize>;
 }
 
-struct <STRUCT>Object</STRUCT><T> {
-    flag: Flag,
-    fields: HashMap<T, u64>
+struct <STRUCT>Object</STRUCT><<TYPE_PARAMETER>T</TYPE_PARAMETER>> {
+    flag: <ENUM>Flag</ENUM>,
+    fields: <STRUCT>HashMap</STRUCT><<TYPE_PARAMETER>T</TYPE_PARAMETER>, u64>
 }
 
 /* Block comment */
-fn <function-decl>main</function-decl>() {
+fn <FUNCTION_DECLARATION>main</FUNCTION_DECLARATION>() {
     // A simple integer calculator:
     // `+` or `-` means add or subtract by 1
     // `*` or `/` means multiply or divide by 2
 
-    let input = Option::None;
-    let program = input.unwrap_or_else(|| "+ + * - /");
-    let mut <mut-binding>accumulator</mut-binding> = 0;
+    let input = <ENUM>Option</ENUM>::None;
+    let program = input.<INSTANCE_METHOD>unwrap_or_else</INSTANCE_METHOD>(|| "+ + * - /");
+    let mut <MUT_BINDING>accumulator</MUT_BINDING> = 0;
 
-    for token in program.chars() {
+    for token in program.<INSTANCE_METHOD>chars</INSTANCE_METHOD>() {
         match token {
-            '+' => <mut-binding>accumulator</mut-binding> += 1,
-            '-' => <mut-binding>accumulator</mut-binding> -= 1,
-            '*' => <mut-binding>accumulator</mut-binding> *= 2,
-            '/' => <mut-binding>accumulator</mut-binding> /= 2,
+            '+' => <MUT_BINDING>accumulator</MUT_BINDING> += 1,
+            '-' => <MUT_BINDING>accumulator</MUT_BINDING> -= 1,
+            '*' => <MUT_BINDING>accumulator</MUT_BINDING> *= 2,
+            '/' => <MUT_BINDING>accumulator</MUT_BINDING> /= 2,
             _ => { /* ignore everything else */ }
         }
     }
 
-    <macro>info!</macro>("The program \"{}\" calculates the value {}",
-             program, <mut-binding>accumulator</mut-binding>);
+    <MACRO>info!</MACRO>("The program \"{}\" calculates the value {}",
+             program, <MUT_BINDING>accumulator</MUT_BINDING>);
 }
 
 /// Some documentation
-<attribute>#[cfg(target_os=</attribute>"linux"<attribute>)]</attribute>
-unsafe fn <function-decl>a_function</function-decl><<type-parameter>T</type-parameter>: 'lifetime>() {
+<ATTRIBUTE>#[cfg(target_os=</ATTRIBUTE>"linux"<ATTRIBUTE>)]</ATTRIBUTE>
+unsafe fn <FUNCTION_DECLARATION>a_function</FUNCTION_DECLARATION><<TYPE_PARAMETER>T</TYPE_PARAMETER>: <LIFETIME>'lifetime</LIFETIME>>() {
     'label: loop {
-        println!("Hello\x20W\u{f3}rld!\u{abcdef}");
+        <MACRO>println!</MACRO>("Hello\x20W\u{f3}rld!\u{abcdef}");
     }
 }
