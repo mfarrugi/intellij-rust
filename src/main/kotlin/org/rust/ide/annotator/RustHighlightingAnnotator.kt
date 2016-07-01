@@ -8,55 +8,47 @@ import org.rust.ide.highlight.syntax.RustHighlighter
 import org.rust.lang.core.psi.*
 import org.rust.lang.core.psi.impl.mixin.isMut
 import org.rust.lang.core.psi.util.elementType
+import org.rust.lang.core.psi.visitors.RustComputingVisitor
 
 // Highlighting logic here should be kept in sync with tags in RustColorSettingsPage
 class RustHighlightingAnnotator : Annotator {
 
     override fun annotate(element: PsiElement, _holder: AnnotationHolder) {
-        val highlighter = wrap(_holder)
         if (element is RustReferenceElement) {
-            // Highlight the element dependent on what it's referencing.
-            val ref = element.reference.resolve() ?: return
-
             val text = when (element) {
                 is RustPathElement -> element.identifier
                 else -> element
             }
-            resolveColor(ref)?.let { highlighter.highlight(text, it) }
+            val ref = element.reference.resolve() ?: return
+            // Highlight the element dependent on what it's referencing.
+            val color = highlightingVisitor().computeNullable(ref)?.second
+            _holder.highlight(text, color)
         } else {
-            element.accept(highlightingVisitor(highlighter))
+            val (text, color) = highlightingVisitor().computeNullable(element) ?: return
+            _holder.highlight(text, color)
         }
     }
 
-    // Capture the color of the element w/o mutating anything.
-    fun resolveColor(e: PsiElement): RustColor? {
-        var outColor: RustColor? = null;
-        val resolver = highlightingVisitor(object : Highlighter { // @TODO Could use RustComputingVisitor
-            override fun highlight(element: PsiElement?, color: RustColor?) {
-                assert(outColor == null, { "$e is not a leaf element, ambiguous color." })
-                outColor = color;
-            }
-        })
-
-        e.accept(resolver)
-        return outColor
+    fun AnnotationHolder.highlight(element: PsiElement?, color: RustColor?) {
+        val textAttributesKey = color?.textAttributesKey
+        if (element != null && textAttributesKey != null) {
+            createInfoAnnotation(element, null).textAttributes = textAttributesKey
+        }
     }
 
-    fun highlightingVisitor(holder: Highlighter) = object : RustElementVisitor() {
+    fun highlightingVisitor() = object : RustComputingVisitor<Pair<PsiElement?, RustColor?>>() {
 
-        fun highlight(element: PsiElement?, color: RustColor?) = holder.highlight(element, color)
+        fun highlight(element: PsiElement?, color: RustColor?) = set { Pair(element, color) }
 
         override fun visitLitExpr(o: RustLitExprElement) {
             // Re-highlight literals in attributes
             if (o.parent is RustMetaItemElement) {
                 val literal = o.firstChild
-                holder.highlight(literal, RustHighlighter.map(literal.elementType))
+                highlight(literal, RustHighlighter.map(literal.elementType))
             }
         }
 
-        override fun visitTypeParam(o: RustTypeParamElement) {
-            highlight(o.identifier, RustColor.TYPE_PARAMETER)
-        }
+        override fun visitTypeParam(o: RustTypeParamElement) = highlight(o.identifier, RustColor.TYPE_PARAMETER)
 
         override fun visitAttr(o: RustAttrElement) = highlight(o, RustColor.ATTRIBUTE)
 
@@ -83,23 +75,6 @@ class RustHighlightingAnnotator : Annotator {
             highlight(o.identifier, if (o.isStatic) RustColor.STATIC_METHOD else RustColor.INSTANCE_METHOD)
         override fun visitTraitMethodMember(o: RustTraitMethodMemberElement) =
             highlight(o.identifier, if (o.isStatic) RustColor.STATIC_METHOD else RustColor.INSTANCE_METHOD)
-
-    }
-}
-
-interface Highlighter {
-    fun highlight(element: PsiElement?, color: RustColor?);
-}
-
-fun wrap(holder: AnnotationHolder): Highlighter {
-    return object: Highlighter{
-
-        override fun highlight(element: PsiElement?, color: RustColor?) {
-            val textAttributesKey = color?.textAttributesKey
-            if (element != null && textAttributesKey != null) {
-                holder.createInfoAnnotation(element, null).textAttributes = textAttributesKey
-            }
-        }
 
     }
 }
