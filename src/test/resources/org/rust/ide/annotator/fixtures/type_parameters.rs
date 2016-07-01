@@ -4,5 +4,5 @@ trait <info>MyTrait</info> {
 }
 
 struct <info>MyStruct</info><<info>N</info>: ?<info>Sized</info>+<info>Debug</info>+<info><info>MyTrait</info></info>> {
-    N: my_field
+    <info>N</info>: my_field
 }

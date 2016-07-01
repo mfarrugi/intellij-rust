@@ -3,6 +3,7 @@ package org.rust.ide.annotator
 import com.intellij.lang.annotation.AnnotationHolder
 import com.intellij.lang.annotation.Annotator
 import com.intellij.psi.PsiElement
+import org.jetbrains.annotations.NotNull
 import org.rust.ide.colors.RustColor
 import org.rust.ide.highlight.syntax.RustHighlighter
 import org.rust.lang.core.psi.*
@@ -61,10 +62,16 @@ class RustHighlightingAnnotator : Annotator {
         }
 
         override fun visitEnumItem(o: RustEnumItemElement)       = highlight(o.identifier, RustColor.ENUM)
+        override fun visitEnumVariant(o: RustEnumVariantElement) = highlight(o.identifier, RustColor.ENUM_VARIANT)
+
         override fun visitStructItem(o: RustStructItemElement)   = highlight(o.identifier, RustColor.STRUCT)
         override fun visitTraitItem(o: RustTraitItemElement)     = highlight(o.identifier, RustColor.TRAIT)
         override fun visitModDeclItem(o: RustModDeclItemElement) = highlight(o.identifier, RustColor.MODULE)
         override fun visitModItem(o: RustModItemElement)         = highlight(o.identifier, RustColor.MODULE)
+
+        override fun visitFieldDecl(o: RustFieldDeclElement)     = highlight(o.identifier, RustColor.FIELD)
+
+        override fun visitExternCrateItem(o: RustExternCrateItemElement) = highlight(o.identifier, RustColor.CRATE)
 
         //@TODO When are element and element.identifier different?
         override fun visitMacroInvocation(m: RustMacroInvocationElement) = highlight(m, RustColor.MACRO)

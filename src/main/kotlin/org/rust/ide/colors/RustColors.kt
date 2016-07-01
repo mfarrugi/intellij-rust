@@ -19,10 +19,14 @@ enum class RustColor(val humanName: String, val externalName: String, fallback: 
     STRING                ("String", "org.rust.STRING", Default.STRING),
     NUMBER                ("Number", "org.rust.NUMBER", Default.NUMBER),
 
-    STRUCT                ("Struct", "org.rust.STRUCT", Default.CLASS_NAME),
-    TRAIT                 ("Trait",  "org.rust.TRAIT",  Default.INTERFACE_NAME),
-    ENUM                  ("Enum",   "org.rust.ENUM",   Default.CLASS_NAME),
-    MODULE                ("Module", "org.rust.MODULE", Default.IDENTIFIER),
+    CRATE                 ("Crate",          "org.rust.CRATE",          Default.IDENTIFIER),
+    STRUCT                ("Struct",         "org.rust.STRUCT",         Default.CLASS_NAME),
+    TRAIT                 ("Trait",          "org.rust.TRAIT",          Default.INTERFACE_NAME),
+    MODULE                ("Module",         "org.rust.MODULE",         Default.IDENTIFIER),
+    ENUM                  ("Enum",           "org.rust.ENUM",           Default.CLASS_NAME),
+    ENUM_VARIANT          ("Enum Variant",   "org.rust.ENUM_VARIANT",   Default.STATIC_FIELD),
+
+    FIELD                 ("Field",          "org.rust.FIELD",          Default.INSTANCE_FIELD),
 
     KEYWORD               ("Keyword", "org.rust.KEYWORD", Default.KEYWORD),
 
