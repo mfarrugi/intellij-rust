@@ -13,10 +13,10 @@ import org.rust.lang.core.psi.visitors.RustComputingVisitor
 // Highlighting logic here should be kept in sync with tags in RustColorSettingsPage
 class RustHighlightingAnnotator : Annotator {
 
-    override fun annotate(element: PsiElement, _holder: AnnotationHolder) {
+    override fun annotate(element: PsiElement, holder: AnnotationHolder) {
         if (element is RustReferenceElement) {
             if (element is RustPathElement && element.isPrimitive) {
-                _holder.highlight(element, RustColor.PRIMITIVE_TYPE)
+                holder.highlight(element, RustColor.PRIMITIVE_TYPE)
                 return
             }
             val text = when (element) {
@@ -26,10 +26,10 @@ class RustHighlightingAnnotator : Annotator {
             val ref = element.reference.resolve() ?: return
             // Highlight the element dependent on what it's referencing.
             val color = highlightingVisitor().computeNullable(ref)?.second
-            _holder.highlight(text, color)
+            holder.highlight(text, color)
         } else {
             val (text, color) = highlightingVisitor().computeNullable(element) ?: return
-            _holder.highlight(text, color)
+            holder.highlight(text, color)
         }
     }
 
@@ -76,7 +76,7 @@ class RustHighlightingAnnotator : Annotator {
 
         override fun visitExternCrateItem(o: RustExternCrateItemElement) = highlight(o.identifier, RustColor.CRATE)
 
-        //@TODO When are element and element.identifier different?
+        //TODO: When are element and element.identifier different?
         override fun visitMacroInvocation(m: RustMacroInvocationElement) = highlight(m, RustColor.MACRO)
         override fun visitMethodCallExpr(o: RustMethodCallExprElement)   = highlight(o.identifier, RustColor.INSTANCE_METHOD)
         override fun visitFnItem(o: RustFnItemElement)                   = highlight(o.identifier, RustColor.FUNCTION_DECLARATION)
